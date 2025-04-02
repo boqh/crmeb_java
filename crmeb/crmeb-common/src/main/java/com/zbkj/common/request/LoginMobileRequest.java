@@ -46,5 +46,9 @@ public class LoginMobileRequest implements Serializable {
     private Integer spreadPid;
 
 
+    @ApiModelProperty(value = "推广人id")
+    @JsonProperty(value = "password")
+    private String password;
+
 
 }

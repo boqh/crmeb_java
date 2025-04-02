@@ -101,35 +101,36 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public LoginResponse phoneLogin(LoginMobileRequest loginRequest) {
         //检测验证码
-        checkValidateCode(loginRequest.getPhone(), loginRequest.getCaptcha());
+//        checkValidateCode(loginRequest.getPhone(), loginRequest.getCaptcha());
         Integer spreadPid = Optional.ofNullable(loginRequest.getSpreadPid()).orElse(0);
         //查询手机号信息
         User user = userService.getByPhone(loginRequest.getPhone());
         if (ObjectUtil.isNull(user)) {// 此用户不存在，走新用户注册流程
-            user = userService.registerPhone(loginRequest.getPhone(), spreadPid);
+            user = userService.registerPhone(loginRequest.getPhone(), spreadPid, loginRequest.getPassword());
         } else {
-            if (!user.getStatus()) {
-                throw new CrmebException("当前账户已禁用，请联系管理员！");
-            }
-            if (user.getSpreadUid().equals(0) && spreadPid > 0) {
-                // 绑定推广关系
-                bindSpread(user, spreadPid);
-            }
-            // 记录最后一次登录时间
-            user.setLastLoginTime(DateUtil.nowDateTime());
-            boolean b = userService.updateById(user);
-            if (!b) {
-                logger.error("用户登录时，记录最后一次登录时间出错,uid = " + user.getUid());
-            }
+            throw new CrmebException("该手机号已注册，请登录!");
+//            if (!user.getStatus()) {
+//                throw new CrmebException("当前账户已禁用，请联系管理员！");
+//            }
+//            if (user.getSpreadUid().equals(0) && spreadPid > 0) {
+//                // 绑定推广关系
+//                bindSpread(user, spreadPid);
+//            }
+//            // 记录最后一次登录时间
+//            user.setLastLoginTime(DateUtil.nowDateTime());
+//            boolean b = userService.updateById(user);
+//            if (!b) {
+//                logger.error("用户登录时，记录最后一次登录时间出错,uid = " + user.getUid());
+//            }
         }
 
         //生成token
         LoginResponse loginResponse = new LoginResponse();
-        String token = tokenComponent.createToken(user);
-        loginResponse.setToken(token);
-        loginResponse.setUid(user.getUid());
-        loginResponse.setNikeName(user.getNickname());
-        loginResponse.setPhone(user.getPhone());
+//        String token = tokenComponent.createToken(user);
+//        loginResponse.setToken(token);
+//        loginResponse.setUid(user.getUid());
+//        loginResponse.setNikeName(user.getNickname());
+//        loginResponse.setPhone(user.getPhone());
         return loginResponse;
     }
 

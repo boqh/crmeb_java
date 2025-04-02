@@ -30,7 +30,7 @@
 								<view class="phone" v-if="!userInfo.phone && isLogin" @tap="bindPhone">绑定手机号</view>
 							</view>
 						</view>
-						<view class="num-wrapper">
+						<!-- <view class="num-wrapper">
 							<view class="num-item" @click="goMenuPage('/pages/users/user_money/index')">
 								<text
 									class="num">{{userInfo.nowMoney && uid ?Number(userInfo.nowMoney).toFixed(2):0}}</text>
@@ -48,7 +48,7 @@
 								<text class="num">{{userInfo.collectCount && uid ? userInfo.collectCount : 0}}</text>
 								<view class="txt">收藏</view>
 							</view>
-						</view>
+						</view> -->
 						<!-- <view class="sign" @click="goSignIn">签到</view> -->
 					</view>
 					<view class="order-wrapper">
@@ -98,10 +98,10 @@
 								</navigator>
 							</block>
 							<!-- #ifndef MP -->
-							<view class="item" @click="kefuClick">
+							<!-- <view class="item" @click="kefuClick">
 								<image :src="servicePic"></image>
 								<text>联系客服</text>
-							</view>
+							</view> -->
 							<!-- #endif -->
 							<!-- #ifdef MP -->
 							<button class="item" open-type='contact' hover-class='none'>
@@ -111,7 +111,7 @@
 							<!-- #endif -->
 						</view>
 					</view>
-					<image src="/static/images/support.png" alt="" class='support'>
+					<!-- <image src="/static/images/support.png" alt="" class='support'> -->
 					<view class="uni-p-b-98"></view>
 				</view>
 

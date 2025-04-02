@@ -735,10 +735,10 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
      * @return User
      */
     @Override
-    public User registerPhone(String phone, Integer spreadUid) {
+    public User registerPhone(String phone, Integer spreadUid, String password) {
         User user = new User();
         user.setAccount(phone);
-        user.setPwd(CommonUtil.createPwd(phone));
+        user.setPwd(CrmebUtil.encryptPassword(password, phone));
         user.setPhone(phone);
         user.setUserType(Constants.USER_LOGIN_TYPE_H5);
         user.setNickname(CommonUtil.createNickName(phone));

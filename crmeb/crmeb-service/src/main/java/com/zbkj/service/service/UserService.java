@@ -171,7 +171,7 @@ public interface UserService extends IService<User> {
      * @param spreadUid 推广人编号
      * @return User
      */
-    User registerPhone(String phone, Integer spreadUid);
+    User registerPhone(String phone, Integer spreadUid,String password);
 
     /**
      * 检测能否绑定关系

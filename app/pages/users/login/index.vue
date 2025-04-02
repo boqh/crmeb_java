@@ -1,432 +1,383 @@
 <template>
-	<div class="login-wrapper">
-		<div class="shading">
-			<!-- <image :src="logoUrl"/> -->
-			<image :src="logoUrl"/>
-			<!-- <image src="/static/images/logo2.png" v-if="!logoUrl" /> -->
-		</div>
-		<div class="whiteBg" v-if="formItem === 1">
-			<div class="list" v-if="current !== 1">
-				<form @submit.prevent="submit">
-					<div class="item">
-						<div class="acea-row row-middle">
-							<image src="/static/images/phone_1.png"  style="width: 24rpx; height: 34rpx;"></image>
-							<input type="text" class="texts" placeholder="输入手机号码" v-model="account" required/>
-						</div>
-					</div>
-					<div class="item">
-						<div class="acea-row row-middle">
-							<image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
-							<input type="password" class="texts" placeholder="填写登录密码" v-model="password" required />
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="list" v-if="current !== 0 || appLoginStatus || appleLoginStatus">
-				<div class="item">
-					<div class="acea-row row-middle">
-						<image src="/static/images/phone_1.png" style="width: 24rpx; height: 34rpx;"></image>
-						<input type="text" class="texts" placeholder="输入手机号码" v-model="account" />
-					</div>
-				</div>
-				<div class="item">
-					<div class="acea-row row-middle">
-						<image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
-						<input type="text" placeholder="填写验证码" class="codeIput" v-model="captcha" />
-						<button class="code" :disabled="disabled" :class="disabled === true ? 'on' : ''" @click="code">
-							{{ text }}
-						</button>
-					</div>
-				</div>
-				<div class="item" v-if="isShowCode">
-					<div class="acea-row row-middle">
-						<image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
-						<input type="text" placeholder="填写验证码" class="codeIput" v-model="codeVal" />
-						<div class="code" @click="again"><img :src="codeUrl" /></div>
-					</div>
-				</div>
-			</div>
-			<div class="logon" @click="loginMobile" v-if="current !== 0">登录</div>
-			<div class="logon" @click="submit" v-if="current === 0">登录</div>
-			<div class="tips">
-				<div v-if="current==0" @click="current = 1">快速登录</div>
-				<div v-if="current==1" @click="current = 0">账号登录</div>
-			</div>
-		</div>
-		<div class="bottom"></div>
-	</div>
+  <div class="login-wrapper">
+    <div class="shading">
+      <image :src="logoUrl" />
+    </div>
+    <div class="whiteBg">
+      <div class="list" v-if="formItem === 1">
+        <form @submit.prevent="handleSubmit">
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/phone_1.png" style="width: 24rpx; height: 34rpx;"></image>
+              <input type="text" class="texts" placeholder="输入手机号码" v-model="account" @blur="validateAccount" />
+            </div>
+            <div class="error-tip" v-if="accountError">{{ accountError }}</div>
+          </div>
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
+              <input type="password" class="texts" placeholder="填写登录密码" v-model="password" @blur="validatePassword" />
+            </div>
+            <div class="error-tip" v-if="passwordError">{{ passwordError }}</div>
+          </div>
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
+              <input type="text" placeholder="请输入验证码" class="codeIput" v-model="verifyCodeInput" @blur="validateVerifyCode" />
+              <div class="code verify-code" @click="generateVerifyCode">
+                {{ verifyCode }}
+              </div>
+            </div>
+            <div class="error-tip" v-if="verifyCodeError">{{ verifyCodeError }}</div>
+          </div>
+          <div class="agreement">
+            <checkbox-group @change="handleAgreementChange">
+              <checkbox value="1" :checked="isAgree" style="transform:scale(0.7)" />
+            </checkbox-group>
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="link" @click="openAgreement('user')">《用户协议》</text>
+            <text class="agreement-text">和</text>
+            <text class="link" @click="openAgreement('privacy')">《隐私政策》</text>
+          </div>
+          <div class="error-tip" v-if="agreementError">{{ agreementError }}</div>
+          <div class="logon" @click="handleSubmit">登录</div>
+        </form>
+      </div>
+
+      <div class="list" v-if="formItem === 2">
+        <form @submit.prevent="handleSubmit">
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/phone_1.png" style="width: 24rpx; height: 34rpx;"></image>
+              <input type="text" class="texts" placeholder="输入手机号码" v-model="registerForm.phone" @blur="validateRegisterPhone" />
+            </div>
+            <div class="error-tip" v-if="registerPhoneError">{{ registerPhoneError }}</div>
+          </div>
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
+              <input type="password" class="texts" placeholder="设置密码" v-model="registerForm.password" @blur="validateRegisterPassword" />
+            </div>
+            <div class="error-tip" v-if="registerPasswordError">{{ registerPasswordError }}</div>
+          </div>
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
+              <input type="password" class="texts" placeholder="确认密码" v-model="registerForm.confirmPassword" @blur="validateConfirmPassword" />
+            </div>
+            <div class="error-tip" v-if="confirmPasswordError">{{ confirmPasswordError }}</div>
+          </div>
+          <div class="item">
+            <div class="acea-row row-middle">
+              <image src="/static/images/code_2.png" style="width: 28rpx; height: 32rpx;"></image>
+              <input type="text" placeholder="请输入验证码" class="codeIput" v-model="verifyCodeInput" @blur="validateVerifyCode" />
+              <div class="code verify-code" @click="generateVerifyCode">
+                {{ verifyCode }}
+              </div>
+            </div>
+            <div class="error-tip" v-if="verifyCodeError">{{ verifyCodeError }}</div>
+          </div>
+          <div class="agreement">
+            <checkbox-group @change="handleAgreementChange">
+              <checkbox value="1" :checked="isAgree" style="transform:scale(0.7)" />
+            </checkbox-group>
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="link" @click="openAgreement('user')">《用户协议》</text>
+            <text class="agreement-text">和</text>
+            <text class="link" @click="openAgreement('privacy')">《隐私政策》</text>
+          </div>
+          <div class="error-tip" v-if="agreementError">{{ agreementError }}</div>
+          <div class="logon" @click="handleSubmit">注册</div>
+        </form>
+      </div>
+      <div class="tips">
+        <div @click="switchForm">{{ formItem === 1 ? '没有账号？去注册' : '已有账号？去登录' }}</div>
+      </div>
+    </div>
+    <div class="bottom"></div>
+  </div>
 </template>
+
 <script>
-	import dayjs from "@/plugin/dayjs/dayjs.min.js";
-	import sendVerifyCode from "@/mixins/SendVerifyCode";
-	import {
-		loginH5,
-		loginMobile,
-		registerVerify,
-		register,
-		// getCodeApi,
-		getUserInfo
-	} from "@/api/user";
-	import attrs, {
-		required,
-		alpha_num,
-		chs_phone
-	} from "@/utils/validate";
-	import {
-		validatorDefaultCatch
-	} from "@/utils/dialog";
-	import {
-		getLogo, appAuth, appleLogin
-	} from "@/api/public";
-	import {
-		VUE_APP_API_URL
-	} from "@/utils";
+// 导入相关 API loginH5 登录 loginMobile 注册
+import { loginH5, loginMobile, getUserInfo } from '@/api/user';
 
-	const BACK_URL = "login_back_url";
 
-	export default {
-		name: "Login",
-		mixins: [sendVerifyCode],
-		data: function() {
-			return {
-				navList: ["快速登录", "账号登录"],
-				current: 1,
-				account: "",
-				password: "",
-				captcha: "",
-				formItem: 1,
-				type: "login",
-				logoUrl: "",
-				keyCode: "",
-				codeUrl: "",
-				codeVal: "",
-				isShowCode: false,
-				platform: '',
-				appLoginStatus: false, // 微信登录强制绑定手机号码状态
-				appUserInfo: null, // 微信登录保存的用户信息
-				appleLoginStatus: false, // 苹果登录强制绑定手机号码状态
-				appleUserInfo: null,
-				appleShow: false // 苹果登录版本必须要求ios13以上的
-			};
-		},
-		watch:{
-			formItem:function(nval,oVal){
-				if(nval == 1){
-					this.type = 'login'
-				}else{
-					this.type = 'register'
-				}
+const BACK_URL = "login_back_url";
+
+
+export default {
+  data() {
+    return {
+      formItem: 1,
+      account: "",
+      password: "",
+      logoUrl: "",
+      registerForm: {
+        phone: "",
+        password: "",
+        confirmPassword: ""
+      },
+      verifyCode: '',
+      verifyCodeInput: '',
+      isAgree: false,
+      accountError: '',
+      passwordError: '',
+      verifyCodeError: '',
+      agreementError: '',
+      registerPhoneError: '',
+      registerPasswordError: '',
+      confirmPasswordError: '',
+    };
+  },
+
+  mounted() {
+    this.generateVerifyCode();
+  },
+
+  methods: {
+    switchForm() {
+      this.formItem = this.formItem === 1 ? 2 : 1;
+      this.clearForm();
+      this.generateVerifyCode();
+    },
+
+    clearForm() {
+      this.account = "";
+      this.password = "";
+      this.registerForm = {
+        phone: "",
+        password: "",
+        confirmPassword: ""
+      };
+      this.verifyCodeInput = "";
+      this.isAgree = false;
+      this.accountError = '';
+      this.passwordError = '';
+      this.verifyCodeError = '';
+      this.agreementError = '';
+      this.registerPhoneError = '';
+      this.registerPasswordError = '';
+      this.confirmPasswordError = '';
+    },
+
+    handleAgreementChange(e) {
+      this.isAgree = e.detail.value.length > 0;
+      this.agreementError = this.isAgree ? '' : '请阅读并同意用户协议和隐私政策';
+    },
+
+    openAgreement(type) {
+      const url = type === 'user' ? '/pages/agreement/user' : '/pages/agreement/privacy';
+      uni.navigateTo({
+        url
+      });
+    },
+
+    generateVerifyCode() {
+      const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let code = '';
+      for (let i = 0; i < 4; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      this.verifyCode = code;
+    },
+
+    validateVerifyCode() {
+      if (!this.verifyCodeInput) {
+        this.verifyCodeError = "验证码不能为空";
+      } else if (this.verifyCodeInput.toLowerCase() !== this.verifyCode.toLowerCase()) {
+        this.verifyCodeError = "验证码错误";
+        this.generateVerifyCode();
+      } else {
+        this.verifyCodeError = "";
+      }
+    },
+
+    validateAccount() {
+      if (!this.account) {
+        this.accountError = "手机号不能为空";
+      } else if (!/^1[3-9]\d{9}$/.test(this.account)) {
+        this.accountError = "请输入正确的手机号";
+      } else {
+        this.accountError = "";
+      }
+    },
+
+    validatePassword() {
+      if (!this.password) {
+        this.passwordError = "密码不能为空";
+      } else if (this.password.length < 6) {
+        this.passwordError = "密码长度不能少于6位";
+      } else {
+        this.passwordError = "";
+      }
+    },
+
+    validateRegisterPhone() {
+      if (!this.registerForm.phone) {
+        this.registerPhoneError = "手机号不能为空";
+      } else if (!/^1[3-9]\d{9}$/.test(this.registerForm.phone)) {
+        this.registerPhoneError = "请输入正确的手机号";
+      } else {
+        this.registerPhoneError = "";
+      }
+    },
+
+    validateRegisterPassword() {
+      if (!this.registerForm.password) {
+        this.registerPasswordError = "密码不能为空";
+      } else if (this.registerForm.password.length < 6) {
+        this.registerPasswordError = "密码长度不能少于6位";
+      } else {
+        this.registerPasswordError = "";
+      }
+    },
+
+    validateConfirmPassword() {
+      if (!this.registerForm.confirmPassword) {
+        this.confirmPasswordError = "请确认密码";
+      } else if (this.registerForm.confirmPassword !== this.registerForm.password) {
+        this.confirmPasswordError = "两次输入的密码不一致";
+      } else {
+        this.confirmPasswordError = "";
+      }
+    },
+
+    async handleSubmit() {
+      this.validateAccount();
+      this.validatePassword();
+      this.validateVerifyCode();
+	  if(!this.isAgree){
+		  this.$util.Tips({title: '请阅读并同意用户协议和隐私政策'})
+		  return;
+	  }
+      // this.agreementError = this.isAgree ? '' : '请阅读并同意用户协议和隐私政策';
+
+      if (this.formItem === 2) {
+        this.validateRegisterPhone();
+        this.validateRegisterPassword();
+        this.validateConfirmPassword();
+      }
+
+      // if (this.accountError || this.passwordError || this.verifyCodeError || this.agreementError || this.registerPhoneError || this.registerPasswordError || this.confirmPasswordError) {
+      //   return;
+      // }
+
+      if (this.formItem === 1) {
+        // 登录逻辑
+        uni.showLoading({ title: '登录中...' });
+        try {
+          const res = await loginH5({
+            account: this.account,
+            password: this.password,
+          });
+		  let data = res.data;
+		  let newTime = Math.round(new Date() / 1000);
+		  this.$store.commit("LOGIN", {
+				'token': res.data.token
+		  });
+		  this.getUserInfo(data);
+        } catch (error) {
+          this.generateVerifyCode();
+          uni.showToast({ title: error, icon: 'none' });
+        } finally {
+          uni.hideLoading();
+        }
+      } else {
+        // 注册逻辑
+        uni.showLoading({ title: '注册中...' });
+        try {
+          await loginMobile({
+            phone: this.registerForm.phone,
+            password: this.registerForm.password,
+          });
+		  uni.showToast({ title: '注册成功，请登录', icon: 'none' });
+          this.formItem = 1;
+		  this.clearForm();
+        } catch (error) {
+          console.error(error);
+		  this.generateVerifyCode();
+          uni.showToast({ title: error, icon: 'none' });
+        } finally {
+          uni.hideLoading();
+        }
+      }
+    },
+	
+	getUserInfo(data){
+		alert("11")
+		alert(JSON.stringify(data))
+		this.$store.commit("SETUID", data.uid);
+		getUserInfo().then(res => {
+			this.$store.commit("UPDATE_USERINFO", res.data);
+			let backUrl = this.$Cache.get(BACK_URL) || "/pages/index/index";
+			if (backUrl.indexOf('/pages/users/login/index') !== -1) {
+				backUrl = '/pages/index/index';
 			}
-		},
-		mounted: function() {
-			this.getCode();
-			this.getLogoImage();
-		},
-		onLoad() {
-			let self = this
-			uni.getSystemInfo({
-				success: function(res) {
-					if (res.platform.toLowerCase() == 'ios' && res.system.split(' ')[1] >= 13) {
-						self.appleShow = true
-					}
-				}
+			// #ifdef APP  
+				uni.reLaunch({
+					url: "/pages/index/index"
+				});
+				return
+			// #endif
+			console.log(69999);
+			console.log(backUrl);
+			uni.reLaunch({
+				url: backUrl
 			});
-		},
-		methods: {
-			// 苹果登录
-			appleLogin() {
-				let self = this
-				this.account = ''
-				this.captcha = ''
-				uni.showLoading({
-					title: '登录中'
-				})
-				uni.login({
-					provider: 'apple',
-					timeout: 10000,
-					success(loginRes) {
-						uni.getUserInfo({
-							provider: 'apple',
-							success: function(infoRes) {
-								self.appleUserInfo = infoRes.userInfo
-								self.appleLoginApi()
-							},
-							fail() {
-								uni.hideLoading()
-								uni.showToast({
-									title: '获取用户信息失败',
-									icon: 'none',
-									duration: 2000
-								})
-							},
-							complete() {
-								uni.hideLoading()
-							}
-						});
-					},
-					fail(error) {
-						uni.hideLoading()
-						console.log(error)
-					}
-				})
-			},
-			// 苹果登录Api
-			appleLoginApi() {
-				let self = this
-				appleLogin({
-					openId: self.appleUserInfo.openId,
-					email: self.appleUserInfo.email == undefined ? '' :self.appleUserInfo.email,
-					identityToken: self.appleUserInfo.identityToken || ''
-				}).then((res) => {
-					this.$store.commit("LOGIN", {
-						'token': res.data.token
-					});
-					this.getUserInfo(res.data);
-				}).catch(error => {
-					uni.hideLoading();
-					uni.showModal({
-						title: '提示',
-						content: `错误信息${error}`,
-						success: function(res) {
-							if (res.confirm) {
-								console.log('用户点击确定');
-							} else if (res.cancel) {
-								console.log('用户点击取消');
-							}
-						}
-					});
-				})
-			},
-			// App微信登录
-			wxLogin() {
-				let self = this
-				this.account = ''
-				this.captcha = ''
-				uni.showLoading({
-					title: '登录中'
-				})
-				uni.login({
-					provider: 'weixin',
-					success: function(loginRes) {
-						// 获取用户信息
-						uni.getUserInfo({
-							provider: 'weixin',
-							success: function(infoRes) {
-								uni.hideLoading();
-								self.appUserInfo = infoRes.userInfo
-								self.appUserInfo.type = self.platform === 'ios' ? 'iosWx' : 'androidWx'
-								self.wxLoginGo(self.appUserInfo)
-							},
-							fail() {
-								uni.hideLoading();
-								uni.showToast({
-									title: '获取用户信息失败',
-									icon: 'none',
-									duration: 2000
-								})
-							},
-							complete() {
-								uni.hideLoading()
-							}
-						});
-					},
-					fail() {
-						uni.hideLoading()
-						uni.showToast({
-							title: '登录失败',
-							icon: 'none',
-							duration: 2000
-						})
-					}
-				});
-			},
-			wxLoginGo(userInfo) {
-				appAuth(userInfo).then(res => {
-					if (res.data.type === 'register') {
-						uni.navigateTo({
-							url: '/pages/users/app_login/index?authKey='+res.data.key
-						})
-					}
-					if (res.data.type === 'login') {
-						this.$store.commit("LOGIN", {
-							'token': res.data.token
-						});
-						this.getUserInfo(res.data);
-					}
-				}).catch(res => {
-						that.$util.Tips({
-							title: res
-						});
-				});
-			},
-			again() {
-				this.codeUrl =
-					VUE_APP_API_URL +
-					"/sms_captcha?" +
-					"key=" +
-					this.keyCode +
-					Date.parse(new Date());
-			},
-			getCode() {
-				let that = this
-			},
-			async getLogoImage() {
-				let that = this;
-				getLogo().then(res => {
-					that.logoUrl = res.data.logoUrl?res.data.logoUrl:'/static/images/logo2.png';
-				});
-			},
-			async loginMobile() {
-				let that = this;
-				if (!that.account) return that.$util.Tips({
-					title: '请填写手机号码'
-				});
-				if (!/^1(3|4|5|7|8|9|6)\d{9}$/i.test(that.account)) return that.$util.Tips({
-					title: '请输入正确的手机号码'
-				});
-				if (!that.captcha) return that.$util.Tips({
-					title: '请填写验证码'
-				});
-				if (!/^[\w\d]+$/i.test(that.captcha)) return that.$util.Tips({
-					title: '请输入正确的验证码'
-				});
-				loginMobile({
-						phone: that.account,
-						captcha: that.captcha,
-						spread_spid: that.$Cache.get("spread")
-					})
-					.then(res => {
-						let data = res.data;
-						let newTime = Math.round(new Date() / 1000);
-						this.$store.commit("LOGIN", {
-							'token': res.data.token
-						});
-						that.getUserInfo(data);
-					})
-					.catch(res => {
-						that.$util.Tips({
-							title: res
-						});
-					});
-			},
-			async register() {
-				let that = this;
-				if (!that.account) return that.$util.Tips({
-					title: '请填写手机号码'
-				});
-				if (!/^1(3|4|5|7|8|9|6)\d{9}$/i.test(that.account)) return that.$util.Tips({
-					title: '请输入正确的手机号码'
-				});
-				if (!that.captcha) return that.$util.Tips({
-					title: '请填写验证码'
-				});
-				if (!/^[\w\d]+$/i.test(that.captcha)) return that.$util.Tips({
-					title: '请输入正确的验证码'
-				});
-				if (!that.password) return that.$util.Tips({
-					title: '请填写密码'
-				});
-				if (!/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$/i.test(that.password)) return that.$util.Tips({
-					title: '您输入的密码过于简单'
-				});
-				register({
-						account: that.account,
-						captcha: that.captcha,
-						password: that.password,
-						spread: that.$Cache.get("spread")
-					})
-					.then(res => {
-						that.$util.Tips({
-							title: res
-						});
-						that.formItem = 1;
-					})
-					.catch(res => {
-						that.$util.Tips({
-							title: res
-						});
-					});
-			},
-			async code() {
-				let that = this;
-				if (!that.account) return that.$util.Tips({
-					title: '请填写手机号码'
-				});
-				if (!/^1(3|4|5|7|8|9|6)\d{9}$/i.test(that.account)) return that.$util.Tips({
-					title: '请输入正确的手机号码'
-				});
-				if (that.formItem == 2) that.type = "register";
-				await registerVerify(that.account)
-					.then(res => {
-						that.$util.Tips({title:res.message});
-						that.sendCode();
-					})
-					.catch(err => {
-						return that.$util.Tips({
-							title: err
-						});
-					});
-			},
-			navTap: function(index) {
-				this.current = index;
-			},
-			async submit() {
-				let that = this;
-				if (!that.account) return that.$util.Tips({
-					title: '请填写账号'
-				});
-				if (!/^[\w\d]{5,16}$/i.test(that.account)) return that.$util.Tips({
-					title: '请输入正确的账号'
-				});
-				if (!that.password) return that.$util.Tips({
-					title: '请填写密码'
-				});
-				loginH5({
-						account: that.account,
-						password: that.password,
-						spread: that.$Cache.get("spread")
-					})
-					.then(({
-						data
-					}) => {
-						this.$store.commit("LOGIN", {
-							'token': data.token
-						});
-						that.getUserInfo(data);	
-					})
-					.catch(e => {
-						that.$util.Tips({
-							title: e
-						});
-					});
-			},
-			getUserInfo(data){
-				this.$store.commit("SETUID", data.uid);
-				getUserInfo().then(res => {
-					this.$store.commit("UPDATE_USERINFO", res.data);
-					let backUrl = this.$Cache.get(BACK_URL) || "/pages/index/index";
-					if (backUrl.indexOf('/pages/users/login/index') !== -1) {
-						backUrl = '/pages/index/index';
-					}
-					
-					// #ifdef APP  
-						uni.reLaunch({
-							url: "/pages/index/index"
-						});
-						return
-					// #endif
-					
-					console.log(69999);
-					console.log(backUrl);
-					uni.reLaunch({
-						url: backUrl
-					});
-				})
-			}
-		}
-	};
+		})
+	}
+  
+  }
+};
 </script>
 <style lang="scss" scoped>
+	.error-tip {
+	  color: #ff4d4f;
+	  font-size: 24rpx;
+	  margin-top: 8rpx;
+	  padding-left: 40rpx;
+	}
+	
+	.code {
+	  img {
+	    height: 60rpx;
+	    width: 120rpx;
+	  }
+	}
+	.agreement {
+	  padding: 20rpx 40rpx;
+	  font-size: 26rpx;
+	  color: #666;
+	  display: flex;
+	  align-items: center;
+	
+	  .agreement-text {
+	    margin: 0 4rpx;
+	  }
+	
+	  .link {
+	    color: #2d8cf0;
+	  }
+	}
+	
+	.verify-code {
+	  padding: 10rpx 30rpx;
+	  font-family: Arial;
+	  font-style: italic;
+	  font-weight: bold;
+	  font-size: 104rpx;  /* 进一步增大字体 */
+	  color: #333;
+	  letter-spacing: 12rpx;  /* 增加字间距 */
+	  cursor: pointer;
+	  user-select: none;
+	  text-align: center;
+	  min-width: 200rpx;  /* 增加容器宽度 */
+	  height: 100rpx;  /* 增加容器高度 */
+	  line-height: 100rpx;  /* 调整行高以保持垂直居中 */
+	  border-radius: 8rpx;  /* 添加圆角 */
+	  margin-left: 20rpx;  /* 增加左边距 */
+	}
 	page {
 		background: #fff;
 	}

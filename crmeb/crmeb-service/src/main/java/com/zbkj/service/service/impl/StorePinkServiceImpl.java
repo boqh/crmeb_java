@@ -368,8 +368,11 @@ public class StorePinkServiceImpl extends ServiceImpl<StorePinkDao, StorePink> i
         LambdaQueryWrapper<StorePink> lqw = new LambdaQueryWrapper<>();
         lqw.eq(StorePink::getIsRefund, false);
         lqw.in(StorePink::getStatus, 1, 2);
-        lqw.groupBy(StorePink::getUid);
+        lqw.inSql(StorePink::getId,
+                "SELECT MAX(id) FROM eb_store_pink WHERE is_refund = 0 AND status IN (1,2) GROUP BY uid");
         lqw.orderByDesc(StorePink::getId);
+//        lqw.groupBy(StorePink::getUid,StorePink::getId);
+//        lqw.orderByDesc(StorePink::getId);
         lqw.last(" limit " + size);
         return dao.selectList(lqw);
     }
