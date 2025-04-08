@@ -305,8 +305,6 @@ export default {
     },
 	
 	getUserInfo(data){
-		alert("11")
-		alert(JSON.stringify(data))
 		this.$store.commit("SETUID", data.uid);
 		getUserInfo().then(res => {
 			this.$store.commit("UPDATE_USERINFO", res.data);

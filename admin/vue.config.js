@@ -36,7 +36,17 @@ module.exports = {
     overlay: {
       warnings: false,
       errors: true
+    },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:20010',
+        changeOrigin: true, // 允许跨域
+        pathRewrite: {
+          '^/api': '/api' // 将请求中的 /api 前缀去掉
+        }
+      }
     }
+
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
